@@ -1,0 +1,30 @@
+[
+    {
+        "provincia": "Pontevedra",
+        "habitantes": 1122000
+    },
+    {
+        "provincia": "Ourense",
+        "habitantes": 300000
+    },
+    {
+        "provincia": "Lugo",
+        "habitantes": 123000
+    },
+    {
+        "provincia": "A Coruña",
+        "habitantes": 1500000
+    },
+    {
+        "provincia": "Huelva",
+        "habitantes": 400000
+    },
+    {
+        "provincia": "Teruel",
+        "habitantes": 600000
+    },
+    {
+        "provincia": "Zaragoza",
+        "habitantes": 1200000
+    }
+]

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Comunidades</title>
+    <style>
+      body {
+        height: 95vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: beige;
+      }
+
+      .container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background-color: black;
+        color: white;
+        padding: 20px;
+        border-radius: 10px;
+      }
+
+      #hora {
+        padding: 0px;
+      }
+
+      div {
+        padding: 5px;
+      }
+    </style>
+  </head>
+  <body onload="getHora()">
+    <div class="container">
+      <h1>Comunidades</h1>
+      <div class="comunidades">
+        <input
+          type="radio"
+          name="comunidad"
+          id="galicia"
+          onchange="getProvincias('galicia.xml')"
+        />
+        <label for="galicia">Galicia</label>
+        <input
+          type="radio"
+          name="comunidad"
+          id="aragon"
+          onchange="getProvincias('aragon.xml')"
+        />
+        <label for="aragon">Aragón</label>
+      </div>
+      <div class="provincias">
+        <input type="checkbox" id="ordenar" onclick="ordenarArray()" />
+        <label for="ordenar">Ordenar</label>
+        <select name="provincias" id="provincias"></select>
+      </div>
+      <div class="habitantes">
+        <textarea
+          name="habitantes"
+          id="habitantes"
+          cols="30"
+          rows="10"
+        ></textarea>
+      </div>
+      <h3 id="hora"></h3>
+    </div>
+    <script>
+      var copiaProvincias = [];
+      var provincias = [];
+      var textAreaHabitantes = document.getElementById("habitantes");
+
+      //Obtenemos las provincias, pasando como parámetro la ruta del xml
+      function getProvincias(comunidad) {
+        provincias = [];
+        copiaProvincias = [];
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function () {
+          if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+            var xml = xmlhttp.responseXML;
+            var xmlProvincias = xml.getElementsByTagName("provincia");
+            for (let index = 0; index < xmlProvincias.length; index++) {
+              provincias[index] = xmlProvincias[index].innerHTML;
+              copiaProvincias[index] = provincias[index];
+            }
+            habitantes.innerHTML = "";
+            if (document.getElementById("ordenar").checked) {
+              ordenarArray();
+            } else {
+              mostrarProvincias(provincias);
+            }
+          }
+        };
+
+        xmlhttp.open("GET", comunidad, true);
+        xmlhttp.send();
+      }
+
+      //Mostramos las provincias en el select
+      function mostrarProvincias(array) {
+        var options = "";
+        for (let index = 0; index < array.length; index++) {
+          options +=
+            "<option value='" +
+            array[index] +
+            "'  onclick='getHabitantes()'>" +
+            array[index] +
+            "</option>";
+        }
+
+        //Guardamos el valor para ponerlo despues de cambiar el innerHTML del select, para que este no cambie
+        valueSelect = document.getElementById("provincias").value;
+        document.getElementById("provincias").innerHTML = options;
+        document.getElementById("provincias").value = valueSelect;
+      }
+
+      //Ordenamos el array, comprobando si está o no checkeado, ya que con el onclick, no tiene porque estar seleccionado el check para ejecutarse esta función
+      function ordenarArray() {
+        if (document.getElementById("ordenar").checked) {
+          var arrayOrdenado = copiaProvincias.sort();
+          mostrarProvincias(arrayOrdenado);
+        } else {
+          mostrarProvincias(provincias);
+        }
+      }
+
+      //Obtenemos los habitantes de JSON
+      function getHabitantes() {
+        var jsonhttp = new XMLHttpRequest();
+        jsonhttp.onreadystatechange = function () {
+          if (jsonhttp.readyState == 4 && jsonhttp.status == 200) {
+            var habitantesArray = JSON.parse(jsonhttp.response);
+            mostrarHabitantes(habitantesArray);
+          }
+        };
+
+        jsonhttp.open("GET", "habitantes.json", true);
+        jsonhttp.send();
+      }
+
+      //Mostramos los habitantes
+      function mostrarHabitantes(habitantes) {
+        for (let index = 0; index < habitantes.length; index++) {
+          if (
+            habitantes[index].provincia ==
+            document.getElementById("provincias").value
+          ) {
+            textAreaHabitantes.innerHTML = 'Habitantes: '+habitantes[index].habitantes;
+          }
+        }
+      }
+
+      //Obtenemos la hora a partir del worker de hora
+      function getHora() {
+        var workerHora = new Worker("hora.js");
+        workerHora.onmessage = function (event) {
+          document.getElementById("hora").innerHTML = event.data;
+        };
+      }
+    </script>
+  </body>
+</html>
